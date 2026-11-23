@@ -13,13 +13,17 @@ export default function Login() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
     });
-    if (r.ok) location.href = "/";
+    if (r.ok) {
+      const { exp } = await r.json();
+      try { localStorage.setItem("storix_exp", String(exp)); } catch {}
+      location.href = "/";
+    }
     else setErr("Invalid credentials");
   }
 
   return (
     <form className="login" onSubmit={submit}>
-      <h1>Cmd Drop</h1>
+      <h1>Storix</h1>
       <input placeholder="Username" value={username} onChange={(e) => setU(e.target.value)} autoFocus />
       <input placeholder="Password" type="password" value={password} onChange={(e) => setP(e.target.value)} />
       <button className="primary">Login</button>

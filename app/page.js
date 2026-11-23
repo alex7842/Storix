@@ -1,9 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { api, logout } from "@/lib/client";
+import { api, logout, useAutoLogout } from "@/lib/client";
 
 export default function Home() {
+  useAutoLogout();
   const [list, setList] = useState(null);
   const [name, setName] = useState("");
   const [err, setErr] = useState("");

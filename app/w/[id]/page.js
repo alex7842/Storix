@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, use } from "react";
 import Link from "next/link";
-import { api, copyText, logout } from "@/lib/client";
+import { api, copyText, logout, useAutoLogout } from "@/lib/client";
 
 function Command({ c, onChange }) {
   const [copied, setCopied] = useState(false);
@@ -53,6 +53,7 @@ function Command({ c, onChange }) {
 }
 
 export default function Workspace({ params }) {
+  useAutoLogout();
   const { id } = use(params);
   const [ws, setWs] = useState(null);
   const [list, setList] = useState(null);
