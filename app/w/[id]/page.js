@@ -66,6 +66,21 @@ export default function Workspace({ params }) {
     load();
   }, [id]);
 
+  // live updates: reload the list whenever the server reports a change
+  const [live, setLive] = useState(false);
+  useEffect(() => {
+    const es = new EventSource(`/api/workspaces/${id}/stream`);
+    let first = true;
+    es.onopen = () => {
+      setLive(true);
+      if (!first) load(); // catch up on anything missed while reconnecting
+      first = false;
+    };
+    es.onmessage = () => load();
+    es.onerror = () => setLive(false);
+    return () => es.close();
+  }, [id]);
+
   async function add(e) {
     e.preventDefault();
     if (!content.trim()) return;
@@ -88,7 +103,12 @@ export default function Workspace({ params }) {
       <div className="bar">
         <div>
           <Link href="/">← Workspaces</Link>
-          <h1>{ws?.name || "…"}</h1>
+          <h1>
+            {ws?.name || "…"}{" "}
+            <span className="muted" style={{ color: live ? "#4ade80" : "#888" }}>
+              ● {live ? "Live" : "Connecting…"}
+            </span>
+          </h1>
         </div>
         <div className="row">
           <button onClick={load}>Refresh</button>
