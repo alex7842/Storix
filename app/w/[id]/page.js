@@ -21,7 +21,6 @@ function Command({ c, onChange }) {
     onChange();
   }
   async function remove() {
-    if (!confirm("Delete this command?")) return;
     await api(`/api/commands/${c.id}`, { method: "DELETE" });
     onChange();
   }
@@ -78,6 +77,12 @@ export default function Workspace({ params }) {
     } catch (e) { setErr(e.message); }
   }
 
+  async function clearAll() {
+    if (!list?.length || !confirm(`Clear all ${list.length} commands in this workspace?`)) return;
+    await api(`/api/workspaces/${id}/commands`, { method: "DELETE" });
+    load();
+  }
+
   return (
     <div className="wrap">
       <div className="bar">
@@ -87,6 +92,7 @@ export default function Workspace({ params }) {
         </div>
         <div className="row">
           <button onClick={load}>Refresh</button>
+          <button className="danger" onClick={clearAll} disabled={!list?.length}>Clear all</button>
           <button onClick={logout}>Logout</button>
         </div>
       </div>

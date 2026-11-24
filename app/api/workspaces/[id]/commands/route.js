@@ -22,3 +22,10 @@ export async function POST(req, { params }) {
   const r = await (await db()).collection("commands").insertOne(doc);
   return NextResponse.json(out({ _id: r.insertedId, ...doc }));
 }
+
+export async function DELETE(_req, { params }) {
+  const id = oid((await params).id);
+  if (!id) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const r = await (await db()).collection("commands").deleteMany({ workspaceId: id });
+  return NextResponse.json({ ok: true, deleted: r.deletedCount });
+}
