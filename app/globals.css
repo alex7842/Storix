@@ -16,4 +16,13 @@ button.danger { color: #ff8080; }
 .muted { color: #888; font-size: 12px; }
 pre { margin: 0; padding: 10px; background: #0b0d11; border-radius: 6px; overflow-x: auto; white-space: pre-wrap; word-break: break-all; font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
 .err { color: #ff8080; margin-top: 8px; }
+button:disabled { opacity: 0.5; cursor: default; }
+.file-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 8px 0; border-top: 1px solid #262b36; }
+.drop { border: 2px dashed #3a3f4b; border-radius: 8px; padding: 18px; text-align: center; color: #888; cursor: pointer; margin-bottom: 8px; font-size: 13px; }
+.drop.drag { border-color: #2563eb; color: #7cb7ff; background: #141a28; }
+.progress { height: 6px; background: #252a35; border-radius: 3px; margin-top: 6px; overflow: hidden; }
+.progress > div { height: 100%; background: #2563eb; transition: width 0.2s; }
+.modal-bg { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 10; }
+.modal { background: #161920; border: 1px solid #262b36; border-radius: 8px; padding: 12px; width: 100%; max-width: 1000px; max-height: 92vh; display: flex; flex-direction: column; }
+.modal-body { overflow: auto; }
 .login { max-width: 320px; margin: 15vh auto; padding: 0 16px; display: flex; flex-direction: column; gap: 10px; }

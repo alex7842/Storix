@@ -29,12 +29,19 @@ export async function GET(req, { params }) {
       const send = (s) => { if (!closed) try { controller.enqueue(enc.encode(s)); } catch {} };
       send("retry: 1000\n: connected\n\n");
 
-      changeStream = d.collection("commands").watch([], { fullDocument: "updateLookup" });
+      // watch commands and files (not the raw file chunks)
+      changeStream = d.watch(
+        [{ $match: { "ns.coll": { $in: ["commands", "files"] } } }],
+        { fullDocument: "updateLookup" }
+      );
       changeStream.on("change", (ch) => {
+        const coll = ch.ns.coll;
         // deletes carry no document, so they are always forwarded
-        const owner = ch.fullDocument?.workspaceId?.toString();
-        if (owner && owner !== wsId) return;
-        send(`data: ${ch.operationType}\n\n`);
+        const doc = ch.fullDocument;
+        if (doc?.workspaceId && doc.workspaceId.toString() !== wsId) return;
+        // a file only appears once its upload is finished
+        if (coll === "files" && doc && !doc.complete) return;
+        send(`data: ${coll}:${ch.operationType}\n\n`);
       });
       changeStream.on("error", () => close(controller));
 

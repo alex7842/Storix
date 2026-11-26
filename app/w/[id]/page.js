@@ -2,6 +2,7 @@
 import { useEffect, useState, use } from "react";
 import Link from "next/link";
 import { api, copyText, logout, useAutoLogout } from "@/lib/client";
+import Files from "./files";
 
 function Command({ c, onChange }) {
   const [copied, setCopied] = useState(false);
@@ -60,10 +61,14 @@ export default function Workspace({ params }) {
   const [content, setContent] = useState("");
   const [err, setErr] = useState("");
 
+  const [files, setFiles] = useState(null);
+
   const load = () => api(`/api/workspaces/${id}/commands`).then(setList).catch((e) => setErr(e.message));
+  const loadFiles = () => api(`/api/workspaces/${id}/files`).then(setFiles).catch((e) => setErr(e.message));
+  const loadAll = () => { load(); loadFiles(); };
   useEffect(() => {
     api(`/api/workspaces/${id}`).then(setWs).catch((e) => setErr(e.message));
-    load();
+    loadAll();
   }, [id]);
 
   // live updates: reload the list whenever the server reports a change
@@ -73,10 +78,10 @@ export default function Workspace({ params }) {
     let first = true;
     es.onopen = () => {
       setLive(true);
-      if (!first) load(); // catch up on anything missed while reconnecting
+      if (!first) loadAll(); // catch up on anything missed while reconnecting
       first = false;
     };
-    es.onmessage = () => load();
+    es.onmessage = (e) => (e.data.startsWith("files") ? loadFiles() : load());
     es.onerror = () => setLive(false);
     return () => es.close();
   }, [id]);
@@ -111,7 +116,7 @@ export default function Workspace({ params }) {
           </h1>
         </div>
         <div className="row">
-          <button onClick={load}>Refresh</button>
+          <button onClick={loadAll}>Refresh</button>
           <button className="danger" onClick={clearAll} disabled={!list?.length}>Clear all</button>
           <button onClick={logout}>Logout</button>
         </div>
@@ -121,6 +126,7 @@ export default function Workspace({ params }) {
         <textarea placeholder="Paste command / text here" value={content} onChange={(e) => setContent(e.target.value)} />
         <div><button className="primary">Post</button></div>
       </form>
+      <Files wsId={id} files={files} reload={loadFiles} />
       {err && <div className="err">{err}</div>}
       {list === null ? <div className="muted">Loading…</div> :
         list.length === 0 ? <div className="muted">No commands yet.</div> :
