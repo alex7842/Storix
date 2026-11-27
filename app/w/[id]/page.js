@@ -139,9 +139,11 @@ export default function Workspace({ params }) {
       </div>
       {err && <div className="err">{err}</div>}
 
-      {tab === "files" ? (
+      {/* kept mounted so uploads keep their progress when switching tabs */}
+      <div style={{ display: tab === "files" ? "block" : "none" }}>
         <Files wsId={id} files={files} reload={loadFiles} />
-      ) : (
+      </div>
+      {tab === "commands" && (
         <>
           <form className="card post" onSubmit={add}>
             <textarea
