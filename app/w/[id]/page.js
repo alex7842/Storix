@@ -62,6 +62,14 @@ export default function Workspace({ params }) {
   const [err, setErr] = useState("");
 
   const [files, setFiles] = useState(null);
+  const [tab, setTab] = useState("commands");
+  useEffect(() => {
+    try { const t = localStorage.getItem("storix_tab"); if (t) setTab(t); } catch {}
+  }, []);
+  const pickTab = (t) => {
+    setTab(t);
+    try { localStorage.setItem("storix_tab", t); } catch {}
+  };
 
   const load = () => api(`/api/workspaces/${id}/commands`).then(setList).catch((e) => setErr(e.message));
   const loadFiles = () => api(`/api/workspaces/${id}/files`).then(setFiles).catch((e) => setErr(e.message));
@@ -117,20 +125,46 @@ export default function Workspace({ params }) {
         </div>
         <div className="row">
           <button onClick={loadAll}>Refresh</button>
-          <button className="danger" onClick={clearAll} disabled={!list?.length}>Clear all</button>
           <button onClick={logout}>Logout</button>
         </div>
       </div>
-      <form className="card" onSubmit={add} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        <input placeholder="Title (optional)" value={title} onChange={(e) => setTitle(e.target.value)} />
-        <textarea placeholder="Paste command / text here" value={content} onChange={(e) => setContent(e.target.value)} />
-        <div><button className="primary">Post</button></div>
-      </form>
-      <Files wsId={id} files={files} reload={loadFiles} />
+
+      <div className="tabs">
+        <button className={tab === "commands" ? "tab active" : "tab"} onClick={() => pickTab("commands")}>
+          Commands <span className="badge">{list?.length ?? 0}</span>
+        </button>
+        <button className={tab === "files" ? "tab active" : "tab"} onClick={() => pickTab("files")}>
+          Files <span className="badge">{files?.length ?? 0}</span>
+        </button>
+      </div>
       {err && <div className="err">{err}</div>}
-      {list === null ? <div className="muted">Loading…</div> :
-        list.length === 0 ? <div className="muted">No commands yet.</div> :
-        list.map((c) => <Command key={c.id} c={c} onChange={load} />)}
+
+      {tab === "files" ? (
+        <Files wsId={id} files={files} reload={loadFiles} />
+      ) : (
+        <>
+          <form className="card post" onSubmit={add}>
+            <textarea
+              placeholder="Paste command / text here  (Ctrl+Enter to post)"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) add(e); }}
+            />
+            <div className="row" style={{ flexWrap: "nowrap" }}>
+              <input placeholder="Title (optional)" value={title} onChange={(e) => setTitle(e.target.value)} />
+              <button className="primary">Post</button>
+            </div>
+          </form>
+          {list?.length > 0 && (
+            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
+              <button className="danger" onClick={clearAll}>Clear all</button>
+            </div>
+          )}
+          {list === null ? <div className="muted">Loading…</div> :
+            list.length === 0 ? <div className="muted">No commands yet.</div> :
+            list.map((c) => <Command key={c.id} c={c} onChange={load} />)}
+        </>
+      )}
     </div>
   );
 }
